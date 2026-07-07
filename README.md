@@ -6,6 +6,7 @@ Scripts for stress testing ATLAS DAOD production with IaaS.
 - `run.sh`: launches multiple local Athena instances against a Triton endpoint.
 - `run_stress_node.sh`: computes the per-node file offset for a Slurm array task and runs `run.sh`.
 - `submit_stress.slurm`: NERSC Perlmutter CPU-node Slurm array submit script.
+- `data/AOD/mc23_aod_files.txt`: default AOD input file list.
 
 ## Single-node test
 
@@ -22,6 +23,7 @@ triton-cluster-svc.ml4phys.com:443
 Useful overrides:
 
 ```bash
+FILE_LIST=/path/to/other_aod_files.txt ./run.sh
 ATHENA_PROC_NUMBER=4 ATHENA_CORE_NUMBER=4 NUM_INSTANCES=32 ./run.sh
 TRITON_URL=other-host.example.org TRITON_PORT=443 ./run.sh
 ```

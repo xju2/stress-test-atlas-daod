@@ -6,7 +6,8 @@ set -euo pipefail
 ## setupATLAS
 ## Example: NUM_INSTANCES=8 FILES_PER_INSTANCE=2 ./run.sh
 
-FILE_LIST="${FILE_LIST:-/global/cfs/cdirs/m3443/data/AOD/mc23_aod_files.txt}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+FILE_LIST="${FILE_LIST:-${SCRIPT_DIR}/data/AOD/mc23_aod_files.txt}"
 NUM_INSTANCES="${NUM_INSTANCES:-4}"
 FILES_PER_INSTANCE="${FILES_PER_INSTANCE:-1}"
 START_INDEX="${START_INDEX:-0}"
