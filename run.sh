@@ -4,6 +4,7 @@ set -euo pipefail
 ## shifter --image=beojan/mpicuda9-2:latest --module cvmfs,gpu
 ## source /global/cfs/cdirs/atlas/scripts/setupATLAS.sh
 ## setupATLAS
+## asetup Athena,25.0.67,here
 ## Example: NUM_INSTANCES=8 FILES_PER_INSTANCE=2 ./run.sh
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -35,6 +36,26 @@ mkdir -p "${RUN_DIR}"
 pids=()
 instances=()
 
+function gnn4itk_cmd() {
+  local TRITON_MODEL_NAME="$1"
+  local TRITON_URL="$2"
+  local TRITON_PORT="$3"
+  local RDO_FILENAME="$4"
+
+  Reco_tf.py --CA 'all:True' \
+  --autoConfiguration 'everything' \
+  --conditionsTag 'all:OFLCOND-MC15c-SDR-14-05' \
+  --geometryVersion 'all:ATLAS-P2-RUN4-03-00-00' \
+  --multithreaded 'True' \
+  --steering 'doRAWtoALL' \
+  --digiSteeringConf 'StandardInTimeOnlyTruth' \
+  --postInclude 'all:PyJobTransforms.UseFrontier' \
+  --preExec "all:flags.ITk.doEndcapEtaNeighbour=True; flags.Tracking.ITkGNNPass.minClusters = [7,7,7]; flags.Tracking.ITkGNNPass.maxHoles = [4,4,2]; flags.Tracking.GNN.Triton.model = \"$TRITON_MODEL_NAME\"; flags.Tracking.GNN.Triton.url = \"$TRITON_URL\"; flags.Tracking.GNN.Triton.port = ${TRITON_PORT}" \
+  --preInclude 'all:Campaigns.PhaseIIPileUp200' 'InDetConfig.ConfigurationHelpers.OnlyTrackingPreInclude' 'InDetGNNTracking.InDetGNNTrackingFlags.gnnTritonValidation' \
+  --inputRDOFile="${RDO_FILENAME}" \
+  --outputAODFile="OUTFILE" --athenaopts='--loglevel=INFO' --maxEvents 2
+}
+
 for ((instance = 0; instance < NUM_INSTANCES; instance++)); do
   start=$((START_INDEX + instance * FILES_PER_INSTANCE))
   if ((start >= ${#FILES[@]})); then
@@ -49,19 +70,19 @@ for ((instance = 0; instance < NUM_INSTANCES; instance++)); do
   (
     cd "${workdir}"
     Derivation_tf.py \
-      --CA "all:True" \
-      --inputAODFile "${batch[@]}" \
-      --athenaMPMergeTargetSize "DAOD_*:0" \
-      --multiprocess True --sharedWriter True \
-      --formats PHYS \
-      --outputDAODFile "DAOD_PHYS_${instance}.pool.root" \
-      --multithreadedFileValidation True \
-      --postInclude 'default:AthenaServices.TransformUtils.ExecCondAlgsAtPreFork' \
-      --parallelCompression False \
-      --perfmon fullmonmt \
-      --preExec "flags.Output.TreeAutoFlush={\"DAOD_PHYS\": 80};flags.BTagging.UseTriton=True;" \
-      --postExec "NNSharingSvcTriton=cfg.getService(\"FTagNNSharingTritonSvc\");NNSharingSvcTriton.TritonUrl=\"${TRITON_URL}\";NNSharingSvcTriton.TritonPort=${TRITON_PORT}"
-  ) > "${workdir}/athena.log" 2>&1 &
+        --CA "all:True" \
+        --inputAODFile "${batch[@]}" \
+        --athenaMPMergeTargetSize "DAOD_*:0" \
+        --multiprocess True --sharedWriter True \
+        --formats PHYS \
+        --outputDAODFile "DAOD_PHYS_${instance}.pool.root" \
+        --multithreadedFileValidation True \
+        --postInclude 'default:AthenaServices.TransformUtils.ExecCondAlgsAtPreFork' \
+        --parallelCompression False \
+        --perfmon fullmonmt \
+        --preExec "flags.Output.TreeAutoFlush={\"DAOD_PHYS\": 80};flags.BTagging.UseTriton=True;import egammaAlgs.egammaAODFixesConfig as a;a.runAODFix=lambda flags,correctCluster=True,checkRelWithAMI=True:(False,'')" \
+        --postExec "NNSharingSvcTriton=cfg.getService(\"FTagNNSharingTritonSvc\");NNSharingSvcTriton.TritonUrl=\"${TRITON_URL}\";NNSharingSvcTriton.TritonPort=${TRITON_PORT}"
+    ) > "${workdir}/athena.log" 2>&1 &
 
   pids+=("$!")
   instances+=("${instance}")
