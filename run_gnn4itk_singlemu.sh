@@ -28,6 +28,8 @@
 ##   NUM_INSTANCES=2 ./run_gnn4itk_singlemu.sh
 ## Threads mostly wait on Triton, so they can oversubscribe the 256 CPUs:
 ##   ATHENA_CORE_NUMBER=128 ./run_gnn4itk_singlemu.sh   # 2048 events in flight
+## ttbar events:
+##   RDO_DIR=/global/cfs/cdirs/m3443/data/GNN4ITK/RDOFiles/mc21_14TeV.601229.PhPy8EG_A14_ttbar_hdamp258p75_SingleLep.recon.RDO.e8481_s4149_r15238 ATHENA_CORE_NUMBER=128 EVENTS_PER_FILE=50 ./run_gnn4itk_singlemu.sh
 ## Batch submission scales to more nodes:
 ##   sbatch -N 64 -q regular -t 2:00:00 run_gnn4itk_singlemu.sh
 ##
@@ -98,7 +100,8 @@ export PATH=/cvmfs/sft.cern.ch/lcg/contrib/ninja/1.11.1/Linux-x86_64/bin:$PATH
 source /global/cfs/cdirs/atlas/scripts/setupATLAS.sh
 setupATLAS
 
-asetup Athena,25.0.67,here
+# asetup Athena,25.0.67,here
+asetup Athena,25.0.75,here
 
 if [[ -n "${FILE_LIST:-}" ]]; then
   mapfile -t RDO_FILES < "${FILE_LIST}"
@@ -116,6 +119,9 @@ TOTAL_INSTANCES=$((NUM_NODES * NUM_INSTANCES))
 TOTAL_EVENTS=$((${#RDO_FILES[@]} * EVENTS_PER_FILE))
 EVENTS_PER_INSTANCE=$(((TOTAL_EVENTS + TOTAL_INSTANCES - 1) / TOTAL_INSTANCES))
 
+
+# Run-4 defaults to CREST, which lacks OFLCOND-MC15c-SDR-14-05.
+# Set UseCREST=False below to keep this COOL tag and use Frontier access.
 function gnn4itk_cmd() {
   local RDO_FILENAME="$1"
   local SKIP_EVENTS="$2"
@@ -129,7 +135,7 @@ function gnn4itk_cmd() {
   --steering 'doRAWtoALL' \
   --digiSteeringConf 'StandardInTimeOnlyTruth' \
   --postInclude 'all:PyJobTransforms.UseFrontier' \
-  --preExec "all:flags.ITk.doEndcapEtaNeighbour=True; flags.Tracking.ITkGNNPass.minClusters = [7,7,7]; flags.Tracking.ITkGNNPass.maxHoles = [4,4,2]; flags.Tracking.GNN.Triton.model = \"$TRITON_MODEL_NAME\"; flags.Tracking.GNN.Triton.url = \"$TRITON_URL\"; flags.Tracking.GNN.Triton.port = ${TRITON_PORT}" \
+  --preExec "all:flags.IOVDb.UseCREST=False; all:flags.ITk.doEndcapEtaNeighbour=True; flags.Tracking.ITkGNNPass.minClusters = [7,7,7]; flags.Tracking.ITkGNNPass.maxHoles = [4,4,2]; flags.Tracking.GNN.Triton.model = \"$TRITON_MODEL_NAME\"; flags.Tracking.GNN.Triton.url = \"$TRITON_URL\"; flags.Tracking.GNN.Triton.port = ${TRITON_PORT}" \
   --preInclude 'all:Campaigns.MC23PhaseIIPileUp200' 'InDetConfig.ConfigurationHelpers.OnlyTrackingPreInclude' 'InDetGNNTracking.InDetGNNTrackingFlags.gnnTritonValidation' \
   --inputRDOFile="${RDO_FILENAME}" \
   --skipEvents="${SKIP_EVENTS}" --maxEvents="${MAX_EVENTS}" \
