@@ -1,0 +1,12 @@
+models=dnnroi-icarus-plane0 dnnroi-icarus-plane1 clients=1 2 4 8 16 32 64 repeats=2 tries=3 out=results/retry_zeus_20261103_154512
+15:45:12 rep=1 model=dnnroi-icarus-plane0 clients=1
+15:46:31 rep=1 model=dnnroi-icarus-plane0 clients=2
+15:47:49 rep=1 model=dnnroi-icarus-plane0 clients=4
+15:49:07 rep=1 model=dnnroi-icarus-plane0 clients=8
+15:50:26 rep=1 model=dnnroi-icarus-plane0 clients=16
+15:51:45 rep=1 model=dnnroi-icarus-plane0 clients=32
+15:53:05 rep=1 model=dnnroi-icarus-plane0 clients=64
+15:54:28 rep=1 model=dnnroi-icarus-plane1 clients=1
+15:55:46 rep=1 model=dnnroi-icarus-plane1 clients=2
+15:57:04 rep=1 model=dnnroi-icarus-plane1 clients=4
+15:58:23 rep=1 model=dnnroi-icarus-plane1 clients=8

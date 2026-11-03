@@ -1,0 +1,24 @@
+*** Measurement Settings ***
+  Batch size: 1
+  Service Kind: TRITON
+  Using "time_windows" mode for stabilization
+  Stabilizing using p95latency and throughput
+  Measurement window: 10000 msec
+  Using synchronous calls for inference
+
+Request concurrency: 1
+  Client: 
+    Request count: 143
+    Throughput: 3.89856 infer/sec
+    p50 latency: 237542 usec
+    p90 latency: 277999 usec
+    p95 latency: 284166 usec
+    p99 latency: 298422 usec
+    Avg gRPC time: 238937 usec ((un)marshal request/response 2540 usec + response wait 236397 usec)
+  Server: 
+    Inference count: 71
+    Execution count: 71
+    Successful request count: 71
+    Avg request latency: 18583 usec (overhead 1191 usec + queue 49 usec + compute input 1020 usec + compute infer 15605 usec + compute output 717 usec)
+Inferences/Second vs. Client p95 Batch Latency
+Concurrency: 1, throughput: 3.89856 infer/sec, latency 284166 usec

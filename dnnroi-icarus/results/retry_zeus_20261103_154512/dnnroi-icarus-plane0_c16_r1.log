@@ -1,0 +1,3 @@
+wrote 655 requests to results/retry_zeus_20261103_154512/dnnroi-icarus-plane0_c16_r1.csv
+model                  hosts  sent/s    ok/s failed retried    p50ms    p90ms    p95ms    p99ms     maxms
+dnnroi-icarus-plane0       1    8.72    8.72      0       0   1818.9   2201.9   2306.7   2610.7    2908.9
